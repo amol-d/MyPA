@@ -23,11 +23,13 @@ import android.widget.ImageButton;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.msc.idol.mypa.chat.adapter.ChatAdapter;
 import com.msc.idol.mypa.chat.model.Message;
 import com.msc.idol.mypa.chat.service.ChatService;
 import com.msc.idol.mypa.chat.utils.Constants;
 import com.msc.idol.mypa.chat.utils.Util;
+import com.msc.idol.mypa.model.weather.WeatherClient;
 import com.msc.idol.mypa.model.web.WebUtils;
 import com.msc.idol.mypa.model.web.WebhoseIOClient;
 
@@ -88,6 +90,15 @@ public class MyPAActivity extends AppCompatActivity
                                 System.out.println(o.getAsJsonObject().get("url"));   // Print url
                                 System.out.println(o.getAsJsonObject().get("language"));   // Print language
                             }
+
+                            WeatherClient weatherClient = new WeatherClient();
+                            JsonObject mainWeather = weatherClient.getWeatherForCity("Mumbai").getAsJsonObject().getAsJsonObject("main");
+                            System.out.println("temp = kelvin " + mainWeather.get("temp"));
+                            System.out.println("temp min = kelvin " + mainWeather.get("temp_min"));
+                            System.out.println("temp max = kelvin " + mainWeather.get("temp_max"));
+                            System.out.println("pressure = hPa " + mainWeather.get("pressure"));
+                            System.out.println("humidity = % " + mainWeather.get("humidity"));
+
                         } catch (URISyntaxException e) {
                             e.printStackTrace();
                         } catch (IOException e) {
