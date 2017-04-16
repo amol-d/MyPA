@@ -10,7 +10,7 @@ import java.util.Locale;
  * Created by foellerich on 16.10.2015.
  *
  */
-class TimeAction implements Action {
+public class TimeAction implements Action {
     public ArrayList<String> getRecognizer() {
         return new ArrayList<>(Arrays.asList(
                 "What is time",
@@ -21,10 +21,10 @@ class TimeAction implements Action {
 
     @Override
     public boolean isActionFitting(String input) {
-        boolean isFitting = true;
+        boolean isFitting = false;
         for (String s : getRecognizer()) {
-            if (!input.toLowerCase().contains(s.toLowerCase())) {
-                isFitting = false;
+            if (input.toLowerCase().trim().contains(s.toLowerCase().trim())) {
+                isFitting = true;
                 break;
             }
         }

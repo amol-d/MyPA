@@ -26,7 +26,7 @@ public class WebAction implements Action {
     @Override
     public boolean isActionFitting(String input) {
         for (String q : getRecognizer()) {
-            if (q.toLowerCase().contains(input)) {
+            if (q.toLowerCase().trim().contains(input.toLowerCase().trim())) {
                 this.input = input;
                 return true;
             }

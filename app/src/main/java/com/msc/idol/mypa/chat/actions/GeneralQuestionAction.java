@@ -19,7 +19,7 @@ public class GeneralQuestionAction implements Action {
         boolean isFitting = false;
         ArrayList<String> queries = getRecognizer();
         for (int i = 0; i < queries.size(); i++) {
-            if (input.toLowerCase().contains(queries.get(i).toLowerCase())) {
+            if (input.toLowerCase().trim().contains(queries.get(i).toLowerCase().trim())) {
                 matchingIndex = i;
                 isFitting = true;
                 break;

@@ -28,19 +28,20 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.msc.idol.mypa.chat.actions.ActionManager;
+import com.msc.idol.mypa.chat.actions.*;
 import com.msc.idol.mypa.chat.adapter.ChatAdapter;
 import com.msc.idol.mypa.chat.model.Message;
-import com.msc.idol.mypa.chat.service.ChatService;
 import com.msc.idol.mypa.chat.utils.Constants;
-import com.msc.idol.mypa.chat.utils.Util;
 import com.msc.idol.mypa.chat.voice.VoiceResponse;
 import com.msc.idol.mypa.location.LocationTracker;
 import com.msc.idol.mypa.model.news.News;
+import com.msc.idol.mypa.model.quote.Quote;
 import com.msc.idol.mypa.model.weather.Weather;
 import com.msc.idol.mypa.model.web.WebResult;
 import com.msc.idol.mypa.model.web.WebUtils;
@@ -52,13 +53,6 @@ import com.msc.idol.mypa.network.WebhoseIOClient;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-
-import okhttp3.Authenticator;
-import okhttp3.Credentials;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.Route;
 
 public class MyPAActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, SoftKeyboardRelativeLayout.SoftKeyboardListener {
@@ -78,17 +72,7 @@ public class MyPAActivity extends AppCompatActivity
     ActionManager actionManager;
     protected static final int RESULT_SPEECH = 1;
 
-    // Defines a runnable which is run every 100ms
-    private Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            chatRecyclerAdapter.addMessage(Util.getNewMessage());
-            rvChat.scrollToPosition(chatRecyclerAdapter.getItemCount() - 1);
-            if (handler != null) {
-                handler.postDelayed(this, 5000);
-            }
-        }
-    };
+
     private boolean voiceCommand = true;
 
     @Override
@@ -99,13 +83,6 @@ public class MyPAActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         actionManager = new ActionManager();
         voice = new VoiceResponse(getApplicationContext());
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // You need to ask the user to enable the permissions
-            ActivityCompat.requestPermissions(this, PROCESS_LOCATION_PERMISSIONS, PROCESS_REQUEST_CODE);
-        } else {
-            getLocation();
-        }
 
         softKeyboardRelativeLayout = (SoftKeyboardRelativeLayout) findViewById(R.id.content_my_pa);
         softKeyboardRelativeLayout.addSoftKeyboardListener(this);
@@ -220,6 +197,8 @@ public class MyPAActivity extends AppCompatActivity
         btSend = (ImageButton) findViewById(R.id.sendMessageButton);
         rvChat = (RecyclerView) findViewById(R.id.rvChat);
 
+        btSend.setBackgroundResource(R.drawable.ic_mic_white_18dp);
+        voiceCommand = true;
 
         // Setting the LayoutManager.
         final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -229,10 +208,11 @@ public class MyPAActivity extends AppCompatActivity
         //Set LayoutManager to RecyclerView
         rvChat.setLayoutManager(layoutManager);
 
+
         // initialize the adapter
         mMessages = new ArrayList<Message>();
 
-        chatRecyclerAdapter = new ChatAdapter(mMessages);
+        chatRecyclerAdapter = new ChatAdapter(mMessages, MyPAActivity.this);
         // attach the adapter to the RecyclerView
         rvChat.setAdapter(chatRecyclerAdapter);
 
@@ -244,11 +224,32 @@ public class MyPAActivity extends AppCompatActivity
                 if (!voiceCommand) {
                     if (!TextUtils.isEmpty(etMessage.getText().toString())) {
                         String input = etMessage.getText().toString();
+                        chatRecyclerAdapter.addMessage(new Message(input, null, true));
                         //TODO add to conversation
                         Object output = actionManager.execute(etMessage.getText().toString());
                         System.out.println(output);
-                        //actionManager.execute(output.toString());
-                        //TODO add to conversation
+                        String outputMessage = "Here's what I got for you";
+                        if (output instanceof String)
+                            voice.speech((String) output);
+                        else
+                            voice.speech(outputMessage);
+
+                        if (output instanceof String) {
+                            chatRecyclerAdapter.addMessage(new Message((String) output, null, false));
+                        } else if (output instanceof ArrayList) {
+                            if (!((ArrayList) output).isEmpty()) {
+                                Object o = ((ArrayList) output).get(0);
+                                if (o instanceof News) {
+                                    chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                                } else if (o instanceof WebResult) {
+                                    chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                                }
+                            }
+                        } else if (output instanceof Weather) {
+                            chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                        } else if (output instanceof Quote) {
+                            chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                        }
                     }
                 } else {
                     Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -262,6 +263,15 @@ public class MyPAActivity extends AppCompatActivity
                 }
             }
         });
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // You need to ask the user to enable the permissions
+            ActivityCompat.requestPermissions(this, PROCESS_LOCATION_PERMISSIONS, PROCESS_REQUEST_CODE);
+        } else {
+            getLocation();
+        }
+
     }
 
     private void sendMessage(String trim) {
@@ -295,11 +305,6 @@ public class MyPAActivity extends AppCompatActivity
         registerReceiver(receiver, filter);
 
         handler = new Handler();
-        refreshMessages();
-
-        // Run the runnable object defined every 100ms
-        handler.postDelayed(runnable, 5000);
-
     }
 
     @Override
@@ -309,12 +314,6 @@ public class MyPAActivity extends AppCompatActivity
         handler = null;
     }
 
-    private void refreshMessages() {
-        // start intent service
-        Intent msgIntent = new Intent(this, ChatService.class);
-        //TODO send authentication and other required info.
-        startService(msgIntent);
-    }
 
     public void getLocation() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -420,12 +419,30 @@ public class MyPAActivity extends AppCompatActivity
                 if (resultCode == RESULT_OK && data != null) {
                     ArrayList<String> text = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     String input = text.get(0);
+                    chatRecyclerAdapter.addMessage(new Message(input, null, true));
                     Object output = actionManager.execute(input);
                     System.out.println(output.toString());
+                    String outputMessage = "Here's what I got for you";
                     if (output instanceof String)
                         voice.speech((String) output);
                     else
-                        voice.speech("Here's what I got for you");
+                        voice.speech(outputMessage);
+                    if (output instanceof String) {
+                        chatRecyclerAdapter.addMessage(new Message((String) output, null, false));
+                    } else if (output instanceof ArrayList) {
+                        if (!((ArrayList) output).isEmpty()) {
+                            Object o = ((ArrayList) output).get(0);
+                            if (o instanceof News) {
+                                chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                            } else if (o instanceof WebResult) {
+                                chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                            }
+                        }
+                    } else if (output instanceof Weather) {
+                        chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                    } else if (output instanceof Quote) {
+                        chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                    }
                 }
                 break;
             }

@@ -27,7 +27,7 @@ public class WeatherAction implements Action {
     @Override
     public boolean isActionFitting(String input) {
         for (String q : getRecognizer()) {
-            if (q.toLowerCase().contains(input.toLowerCase())) {
+            if (q.toLowerCase().trim().contains(input.toLowerCase().trim())) {
                 this.input = input;
                 return true;
             }

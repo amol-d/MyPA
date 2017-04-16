@@ -1,6 +1,9 @@
 package com.msc.idol.mypa.chat.adapter;
 
+import android.content.Context;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +13,10 @@ import android.widget.TextView;
 
 import com.msc.idol.mypa.R;
 import com.msc.idol.mypa.chat.model.Message;
+import com.msc.idol.mypa.model.news.News;
+import com.msc.idol.mypa.model.quote.Quote;
+import com.msc.idol.mypa.model.weather.Weather;
+import com.msc.idol.mypa.model.web.WebResult;
 
 import java.util.ArrayList;
 
@@ -17,9 +24,11 @@ import java.util.ArrayList;
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageItemViewHolder> {
 
     private ArrayList<Message> messageList;
+    private Context context;
 
-    public ChatAdapter(final ArrayList<Message> messages) {
+    public ChatAdapter(final ArrayList<Message> messages, Context context) {
         this.messageList = messages;
+        this.context = context;
     }
 
     @Override
@@ -34,6 +43,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageItemVie
         Message message = messageList.get(position);
 
         final boolean isMe = message.isMine();
+        final Object action = message.getData();
         // Show-hide image based on the logged-in user.
         // Display the profile image to the right for our user, left for other users.
         if (isMe) {
@@ -46,6 +56,54 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageItemVie
             holder.layout.setGravity(Gravity.START);
         }
         holder.body.setText(message.getMessage());
+        if (action == null) {
+            holder.detailCardView.setVisibility(View.GONE);
+        } else {
+            holder.detailCardView.setVisibility(View.VISIBLE);
+            addDetailCard(action, holder);
+        }
+    }
+
+    private void addDetailCard(Object output, MessageItemViewHolder holder) {
+        LinearLayout layout = new LinearLayout(context);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        if (output instanceof ArrayList) {
+            if (!((ArrayList) output).isEmpty()) {
+                Object o = ((ArrayList) output).get(0);
+                if (o instanceof News) {
+                } else if (o instanceof WebResult) {
+                }
+            }
+        } else if (output instanceof Weather) {
+            TextView textView1 = new TextView(context);
+            TextView textView2 = new TextView(context);
+            TextView textView3 = new TextView(context);
+            TextView textView4 = new TextView(context);
+            TextView textView5 = new TextView(context);
+            textView1.setText("City :" + ((Weather) output).getCityName());
+            textView2.setText("Humidity : " + ((Weather) output).getHumidity());
+            textView3.setText("Pressure : " + ((Weather) output).getPressure());
+            textView4.setText("Min. Temp. : " + ((Weather) output).getTempMain());
+            textView5.setText("Max. Temp. : " + ((Weather) output).getTempMax());
+
+            layout.addView(textView1);
+            layout.addView(textView2);
+            layout.addView(textView3);
+            layout.addView(textView4);
+            layout.addView(textView5);
+        } else if (output instanceof Quote) {
+            TextView textView1 = new TextView(context);
+            TextView textView2 = new TextView(context);
+            TextView textView3 = new TextView(context);
+            textView1.setText(((Quote) output).getTitle());
+            textView2.setText(((Quote) output).getContent().replace("<p>", "").replaceAll("</p>", ""));
+            textView3.setText(Html.fromHtml("<a href = " + ((Quote) output).getLink() + ">" + ((Quote) output).getLink() + "</a>"));
+            layout.addView(textView1);
+            layout.addView(textView2);
+            layout.addView(textView3);
+        }
+
+        holder.detailCardView.addView(layout);
     }
 
     @Override
@@ -67,13 +125,14 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageItemVie
     public class MessageItemViewHolder extends RecyclerView.ViewHolder {
         public LinearLayout layout, parentLayput;
         public TextView body;
+        public CardView detailCardView;
 
         public MessageItemViewHolder(View itemView) {
             super(itemView);
             parentLayput = (LinearLayout) itemView.findViewById(R.id.bubble_layout_parent);
             layout = (LinearLayout) itemView.findViewById(R.id.bubble_layout);
             body = (TextView) itemView.findViewById(R.id.message_text);
+            detailCardView = (CardView) itemView.findViewById(R.id.detail_card);
         }
-
     }
 }
