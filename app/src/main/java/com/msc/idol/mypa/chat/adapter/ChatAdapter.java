@@ -1,6 +1,8 @@
 package com.msc.idol.mypa.chat.adapter;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
@@ -8,9 +10,11 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.msc.idol.mypa.ItemListActivity;
 import com.msc.idol.mypa.R;
 import com.msc.idol.mypa.chat.model.Message;
 import com.msc.idol.mypa.model.news.News;
@@ -18,6 +22,7 @@ import com.msc.idol.mypa.model.quote.Quote;
 import com.msc.idol.mypa.model.weather.Weather;
 import com.msc.idol.mypa.model.web.WebResult;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 
@@ -64,14 +69,71 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageItemVie
         }
     }
 
-    private void addDetailCard(Object output, MessageItemViewHolder holder) {
+    private void addDetailCard(final Object output, MessageItemViewHolder holder) {
         LinearLayout layout = new LinearLayout(context);
         layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setBackgroundColor(Color.TRANSPARENT);
         if (output instanceof ArrayList) {
             if (!((ArrayList) output).isEmpty()) {
                 Object o = ((ArrayList) output).get(0);
                 if (o instanceof News) {
+                    for (int i = 0; i < 3; i++) {
+                        News news = (News) ((ArrayList) output).get(i);
+                        View view = LayoutInflater.from(context).inflate(R.layout.news_item, null);
+                        TextView txtTitle, txtDesc, txtUrl, txtViewMore;
+                        ImageView imgNewsImage;
+                        imgNewsImage = (ImageView) view.findViewById(R.id.imgNewsImage);
+                        txtDesc = (TextView) view.findViewById(R.id.txtDesc);
+                        txtTitle = (TextView) view.findViewById(R.id.txtTitle);
+                        txtUrl = (TextView) view.findViewById(R.id.txtUrl);
+                        txtViewMore = (TextView) view.findViewById(R.id.txtViewMore);
+
+                        imgNewsImage.setImageResource(R.drawable.cover);
+//                        txtDesc.setText(news.getDesc());
+                        txtTitle.setText(news.getTitle());
+                        txtUrl.setText(news.getUrl());
+                        if (i == 2)
+                            txtViewMore.setVisibility(View.VISIBLE);
+
+                        txtViewMore.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(context, ItemListActivity.class);
+                                intent.putExtra(ItemListActivity.INTENT_NEWS_ITEMS, (Serializable) output);
+                                context.startActivity(intent);
+                            }
+                        });
+                        layout.addView(view);
+                    }
                 } else if (o instanceof WebResult) {
+
+                    for (int i = 0; i < 3; i++) {
+                        WebResult webResult = (WebResult) ((ArrayList) output).get(i);
+                        View view = LayoutInflater.from(context).inflate(R.layout.news_item, null);
+                        TextView txtTitle, txtDesc, txtUrl, txtViewMore;
+                        ImageView imgNewsImage;
+                        imgNewsImage = (ImageView) view.findViewById(R.id.imgNewsImage);
+                        txtDesc = (TextView) view.findViewById(R.id.txtDesc);
+                        txtTitle = (TextView) view.findViewById(R.id.txtTitle);
+                        txtUrl = (TextView) view.findViewById(R.id.txtUrl);
+                        txtViewMore = (TextView) view.findViewById(R.id.txtViewMore);
+
+                        imgNewsImage.setImageResource(R.drawable.cover);
+                        txtDesc.setText(webResult.getText());
+                        txtTitle.setText(webResult.getTitle());
+                        txtUrl.setText(webResult.getUrl());
+                        if (i == 2)
+                            txtViewMore.setVisibility(View.VISIBLE);
+                        txtViewMore.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Intent intent = new Intent(context, ItemListActivity.class);
+                                intent.putExtra(ItemListActivity.INTENT_WEB_ITEMS, (Serializable) output);
+                                context.startActivity(intent);
+                            }
+                        });
+                        layout.addView(view);
+                    }
                 }
             }
         } else if (output instanceof Weather) {
