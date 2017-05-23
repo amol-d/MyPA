@@ -1,5 +1,7 @@
 package com.msc.idol.mypa.network;
 
+import android.os.StrictMode;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
@@ -25,6 +27,7 @@ public class Client {
      * @throws URISyntaxException
      */
     protected JsonElement getResponse(String rawUrl) throws IOException, URISyntaxException {
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitAll().build());
 
         URL url = new URL(rawUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();

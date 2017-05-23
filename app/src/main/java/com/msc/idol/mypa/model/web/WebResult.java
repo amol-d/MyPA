@@ -1,10 +1,12 @@
 package com.msc.idol.mypa.model.web;
 
+import java.io.Serializable;
+
 /**
  * Created by adesai on 3/14/2017.
  */
 
-public class WebResult {
+public class WebResult implements Serializable {
     private String title, author, text, url, language;
 
     public WebResult(String title, String author, String text, String url, String language) {

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /**
  *
  */
-interface Action {
+public interface Action {
     ArrayList<String> getRecognizer();
     boolean isActionFitting(String input);
     Object execute();

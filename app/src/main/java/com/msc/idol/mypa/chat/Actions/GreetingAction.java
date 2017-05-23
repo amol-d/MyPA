@@ -7,7 +7,7 @@ import java.util.Arrays;
  * Created by foellerich on 16.10.2015.
  *
  */
-class GreetingAction implements Action {
+public class GreetingAction implements Action {
     @Override
     public ArrayList<String> getRecognizer() {
         return new ArrayList<>(Arrays.asList(
@@ -21,7 +21,7 @@ class GreetingAction implements Action {
     public boolean isActionFitting(String input) {
         boolean isFitting = false;
         for (String s : getRecognizer()) {
-            if (input.toLowerCase().contains(s.toLowerCase())) {
+            if (input.toLowerCase().trim().contains(s.toLowerCase().trim())) {
                 isFitting = true;
                 break;
             }

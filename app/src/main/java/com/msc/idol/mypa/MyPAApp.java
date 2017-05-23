@@ -2,6 +2,7 @@ package com.msc.idol.mypa;
 
 import android.app.Application;
 import android.content.Context;
+import android.os.StrictMode;
 
 /**
  * Created by adesai on 3/15/2017.
@@ -13,6 +14,7 @@ public class MyPAApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().permitAll().build());
         mInstance = this;
     }
 

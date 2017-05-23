@@ -1,10 +1,12 @@
 package com.msc.idol.mypa.model.news;
 
+import java.io.Serializable;
+
 /**
  * Created by adesai on 3/14/2017.
  */
 
-public class News {
+public class News implements Serializable {
     String title, desc, url, imageUrl;
 
     public News(String title, String desc, String url, String imageUrl) {
