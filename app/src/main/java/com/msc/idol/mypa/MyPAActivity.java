@@ -53,15 +53,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
-import okhttp3.Authenticator;
-import okhttp3.Credentials;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.Route;
-
 public class MyPAActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, SoftKeyboardRelativeLayout.SoftKeyboardListener {
+        implements NavigationView.OnNavigationItemSelectedListener, SoftKeyboardRelativeLayout.SoftKeyboardListener, AssistantResponseReceiver {
 
     private static final String TAG = MyPAActivity.class.getSimpleName();
     private ResponseReceiver receiver;
@@ -245,7 +238,7 @@ public class MyPAActivity extends AppCompatActivity
                     if (!TextUtils.isEmpty(etMessage.getText().toString())) {
                         String input = etMessage.getText().toString();
                         //TODO add to conversation
-                        Object output = actionManager.execute(etMessage.getText().toString());
+                        Object output = actionManager.execute(MyPAActivity.this, etMessage.getText().toString(), MyPAActivity.this);
                         System.out.println(output);
                         //actionManager.execute(output.toString());
                         //TODO add to conversation
@@ -349,6 +342,11 @@ public class MyPAActivity extends AppCompatActivity
         voiceCommand = true;
     }
 
+    @Override
+    public void responseReceived(Object response) {
+
+    }
+
     // Broadcast receiver that will receive data from service
     public class ResponseReceiver extends BroadcastReceiver {
         public static final String ACTION_RESP = "action_msgs_response";
@@ -420,7 +418,7 @@ public class MyPAActivity extends AppCompatActivity
                 if (resultCode == RESULT_OK && data != null) {
                     ArrayList<String> text = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     String input = text.get(0);
-                    Object output = actionManager.execute(input);
+                    Object output = actionManager.execute(MyPAActivity.this, input, MyPAActivity.this);
                     System.out.println(output.toString());
                     if (output instanceof String)
                         voice.speech((String) output);
