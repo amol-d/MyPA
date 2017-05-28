@@ -1,14 +1,18 @@
 package com.msc.idol.mypa.model.weather;
 
+import io.realm.RealmObject;
+
 /**
  * Created by adesai on 3/14/2017.
  */
 
-public class Weather {
+public class Weather extends RealmObject {
+    long id;
     String cityName;
     private Double tempMain, tempMin, tempMax;
     private Double humidity, pressure;
 
+    public Weather(){}
     public Weather(String cityName, Double tempMain, Double tempMin, Double tempMax, Double humidity, Double pressure) {
         this.cityName = cityName;
         this.tempMain = tempMain;
@@ -16,6 +20,14 @@ public class Weather {
         this.tempMax = tempMax;
         this.humidity = humidity;
         this.pressure = pressure;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public String getCityName() {

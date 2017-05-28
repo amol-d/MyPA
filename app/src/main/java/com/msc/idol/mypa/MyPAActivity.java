@@ -28,20 +28,20 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.msc.idol.mypa.chat.actions.ActionManager;
-import com.msc.idol.mypa.chat.actions.*;
 import com.msc.idol.mypa.chat.adapter.ChatAdapter;
-import com.msc.idol.mypa.chat.model.Message;
 import com.msc.idol.mypa.chat.utils.Constants;
 import com.msc.idol.mypa.chat.voice.VoiceResponse;
 import com.msc.idol.mypa.location.LocationTracker;
+import com.msc.idol.mypa.model.message.Message;
+import com.msc.idol.mypa.model.message.MsgTable;
 import com.msc.idol.mypa.model.news.News;
 import com.msc.idol.mypa.model.quote.Quote;
+import com.msc.idol.mypa.model.string.StringOP;
 import com.msc.idol.mypa.model.weather.Weather;
 import com.msc.idol.mypa.model.web.WebResult;
 import com.msc.idol.mypa.model.web.WebUtils;
@@ -54,6 +54,9 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
+import io.realm.Realm;
+import io.realm.RealmResults;
+
 public class MyPAActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, SoftKeyboardRelativeLayout.SoftKeyboardListener, AssistantResponseReceiver {
 
@@ -63,7 +66,7 @@ public class MyPAActivity extends AppCompatActivity
     private EditText etMessage;
     private ImageButton btSend;
     private RecyclerView rvChat;
-    private ArrayList<Message> mMessages;
+    private ArrayList<com.msc.idol.mypa.model.message.Message> mMessages;
     private ChatAdapter chatRecyclerAdapter;
     private static final String[] PROCESS_LOCATION_PERMISSIONS = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
     private static final int PROCESS_REQUEST_CODE = 2002;
@@ -74,6 +77,8 @@ public class MyPAActivity extends AppCompatActivity
 
 
     private boolean voiceCommand = true;
+    private Realm realm;
+    private RealmResults<MsgTable> resultMsgTbl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +88,8 @@ public class MyPAActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         actionManager = new ActionManager();
         voice = new VoiceResponse(getApplicationContext());
-
+        // Initialize Realm
+        realm = Realm.getDefaultInstance();
         softKeyboardRelativeLayout = (SoftKeyboardRelativeLayout) findViewById(R.id.content_my_pa);
         softKeyboardRelativeLayout.addSoftKeyboardListener(this);
 
@@ -210,7 +216,18 @@ public class MyPAActivity extends AppCompatActivity
 
 
         // initialize the adapter
-        mMessages = new ArrayList<Message>();
+        mMessages = new ArrayList<com.msc.idol.mypa.model.message.Message>();
+        resultMsgTbl = realm.where(MsgTable.class).findAll();
+        for (MsgTable msgTable : resultMsgTbl) {
+            Message message = new Message();
+            message.setId(msgTable.getId());
+            message.setIsMine(msgTable.isMine());
+            message.setMessage(msgTable.getMessage());
+
+            Object action = getActionForMessage(msgTable.getId());
+            message.setAction(action);
+            mMessages.add(message);
+        }
 
         chatRecyclerAdapter = new ChatAdapter(mMessages, MyPAActivity.this);
         // attach the adapter to the RecyclerView
@@ -224,7 +241,7 @@ public class MyPAActivity extends AppCompatActivity
                 if (!voiceCommand) {
                     if (!TextUtils.isEmpty(etMessage.getText().toString())) {
                         String input = etMessage.getText().toString();
-                        chatRecyclerAdapter.addMessage(new Message(input, null, true));
+                        chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(input, null, true));
                         //TODO add to conversation
                         Object output = actionManager.execute(MyPAActivity.this, etMessage.getText().toString(), MyPAActivity.this);
                         System.out.println(output);
@@ -235,20 +252,20 @@ public class MyPAActivity extends AppCompatActivity
                             voice.speech(outputMessage);
 
                         if (output instanceof String) {
-                            chatRecyclerAdapter.addMessage(new Message((String) output, null, false));
+                            chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message((String) output, null, false));
                         } else if (output instanceof ArrayList) {
                             if (!((ArrayList) output).isEmpty()) {
                                 Object o = ((ArrayList) output).get(0);
                                 if (o instanceof News) {
-                                    chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                                    chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
                                 } else if (o instanceof WebResult) {
-                                    chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                                    chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
                                 }
                             }
                         } else if (output instanceof Weather) {
-                            chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                            chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
                         } else if (output instanceof Quote) {
-                            chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                            chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
                         }
                     }
                 } else {
@@ -272,6 +289,33 @@ public class MyPAActivity extends AppCompatActivity
             getLocation();
         }
 
+    }
+
+    private Object getActionForMessage(long id) {
+        StringOP stringAction = realm.where(StringOP.class).equalTo("id", id).findFirst();
+        RealmResults<News> newsAtions = realm.where(News.class).equalTo("id", id).findAll();
+        Quote quoteAction = realm.where(Quote.class).equalTo("id", id).findFirst();
+        Weather weatherAction = realm.where(Weather.class).equalTo("id", id).findFirst();
+        RealmResults<WebResult> webAction = realm.where(WebResult.class).equalTo("id", id).findAll();
+
+        if (stringAction != null)
+            return stringAction;
+        else if (quoteAction != null)
+            return quoteAction;
+        else if (weatherAction != null)
+            return weatherAction;
+        else if (newsAtions != null) {
+            ArrayList<News> newsArrayList = new ArrayList<>();
+            for (News news : newsAtions)
+                newsArrayList.add(news);
+            return newsArrayList;
+        } else if (webAction != null) {
+            ArrayList<WebResult> webResults = new ArrayList<>();
+            for (WebResult webResult : webAction)
+                webResults.add(webResult);
+            return webResults;
+        }
+        return "Waiting for message";
     }
 
     private void sendMessage(String trim) {
@@ -349,8 +393,28 @@ public class MyPAActivity extends AppCompatActivity
     }
 
     @Override
-    public void responseReceived(Object response) {
-
+    public void responseReceived(Object output) {
+        String outputMessage = "Here's what I got for you";
+        if (output instanceof String)
+            voice.speech((String) output);
+        else
+            voice.speech(outputMessage);
+        if (output instanceof String) {
+            chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message((String) output, null, false));
+        } else if (output instanceof ArrayList) {
+            if (!((ArrayList) output).isEmpty()) {
+                Object o = ((ArrayList) output).get(0);
+                if (o instanceof News) {
+                    chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
+                } else if (o instanceof WebResult) {
+                    chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
+                }
+            }
+        } else if (output instanceof Weather) {
+            chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
+        } else if (output instanceof Quote) {
+            chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
+        }
     }
 
     // Broadcast receiver that will receive data from service
@@ -359,7 +423,7 @@ public class MyPAActivity extends AppCompatActivity
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            ArrayList<Message> messages = (ArrayList<Message>) intent.getSerializableExtra(Constants.INTENT_MSGS_EXTRA);
+            ArrayList<com.msc.idol.mypa.model.message.Message> messages = (ArrayList<com.msc.idol.mypa.model.message.Message>) intent.getSerializableExtra(Constants.INTENT_MSGS_EXTRA);
             chatRecyclerAdapter.updateList(messages);
             rvChat.scrollToPosition(messages.size() - 1);
         }
@@ -425,9 +489,10 @@ public class MyPAActivity extends AppCompatActivity
                     ArrayList<String> text = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     String input = text.get(0);
 
+
                     //TODO handle output
                     Object output = actionManager.execute(MyPAActivity.this, input, MyPAActivity.this);
-                    chatRecyclerAdapter.addMessage(new Message(input, null, true));
+                    chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(input, null, true));
 //                    Object output = actionManager.execute(input);
                     System.out.println(output.toString());
                     String outputMessage = "Here's what I got for you";
@@ -436,20 +501,20 @@ public class MyPAActivity extends AppCompatActivity
                     else
                         voice.speech(outputMessage);
                     if (output instanceof String) {
-                        chatRecyclerAdapter.addMessage(new Message((String) output, null, false));
+                        chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message((String) output, null, false));
                     } else if (output instanceof ArrayList) {
                         if (!((ArrayList) output).isEmpty()) {
                             Object o = ((ArrayList) output).get(0);
                             if (o instanceof News) {
-                                chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                                chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
                             } else if (o instanceof WebResult) {
-                                chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                                chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
                             }
                         }
                     } else if (output instanceof Weather) {
-                        chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                        chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
                     } else if (output instanceof Quote) {
-                        chatRecyclerAdapter.addMessage(new Message(outputMessage, output, false));
+                        chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
                     }
                 }
                 break;

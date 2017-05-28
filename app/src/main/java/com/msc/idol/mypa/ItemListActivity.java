@@ -30,8 +30,8 @@ public class ItemListActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         rootLayout = (LinearLayout) findViewById(R.id.rootContainer);
-        newsList = (ArrayList<News>) getIntent().getSerializableExtra(INTENT_NEWS_ITEMS);
-        webResults = (ArrayList<WebResult>) getIntent().getSerializableExtra(INTENT_WEB_ITEMS);
+        newsList = MyPAApp.getInstance().getNewsList();//(ArrayList<News>) getIntent().getSerializableExtra(INTENT_NEWS_ITEMS);
+        webResults = MyPAApp.getInstance().getWebResults();//(ArrayList<WebResult>) getIntent().getSerializableExtra(INTENT_WEB_ITEMS);
         if (newsList != null) {
             addNewsItems(newsList);
         } else if (webResults != null) {

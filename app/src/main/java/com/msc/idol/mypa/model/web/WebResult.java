@@ -2,19 +2,32 @@ package com.msc.idol.mypa.model.web;
 
 import java.io.Serializable;
 
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
 /**
  * Created by adesai on 3/14/2017.
  */
 
-public class WebResult implements Serializable {
+public class WebResult extends RealmObject implements Serializable {
+    long id;
     private String title, author, text, url, language;
 
+    public WebResult(){}
     public WebResult(String title, String author, String text, String url, String language) {
         this.title = title;
         this.author = author;
         this.text = text;
         this.url = url;
         this.language = language;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getTitle() {

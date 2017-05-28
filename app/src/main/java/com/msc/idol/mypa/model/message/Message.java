@@ -1,24 +1,31 @@
-package com.msc.idol.mypa.chat.model;
+package com.msc.idol.mypa.model.message;
 
-import com.msc.idol.mypa.chat.actions.Action;
-
-import java.io.Serializable;
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 /**
- * Created by AMOL on 12/6/2015.
+ * Created by amdam_000 on 5/27/2017.
  */
-public class Message implements Serializable {
+
+public class Message {
+    long id;
     private String message;
     private boolean isMine;
     private Object action;
+
+    public Message() {}
     public Message(String client_message, Object action, boolean isMine) {
         this.action = action;
         this.message = client_message;
         this.isMine = isMine;
     }
 
-    public void setMine(boolean mine) {
-        isMine = mine;
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public Object getData() {
@@ -44,4 +51,5 @@ public class Message implements Serializable {
     public void setIsMine(boolean isMine) {
         this.isMine = isMine;
     }
+
 }
