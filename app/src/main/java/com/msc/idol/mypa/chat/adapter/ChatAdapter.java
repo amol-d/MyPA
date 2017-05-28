@@ -2,7 +2,6 @@ package com.msc.idol.mypa.chat.adapter;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
@@ -23,6 +22,7 @@ import com.msc.idol.mypa.model.quote.Quote;
 import com.msc.idol.mypa.model.string.StringOP;
 import com.msc.idol.mypa.model.weather.Weather;
 import com.msc.idol.mypa.model.web.WebResult;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -62,20 +62,23 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageItemVie
             holder.layout.setBackgroundResource(R.drawable.sender_msg_bubble2);
             holder.layout.setGravity(Gravity.END);
             holder.detailCardView.setVisibility(View.GONE);
+            holder.body.setVisibility(View.VISIBLE);
+            holder.body.setText(message.getMessage());
         } else {
             holder.parentLayput.setGravity(Gravity.START);
             holder.layout.setBackgroundResource(R.drawable.receiver_msg_bubble1);
             holder.layout.setGravity(Gravity.START);
             holder.detailCardView.setVisibility(View.GONE);
-            if (action == null) {
+            if (action == null || (action instanceof ArrayList && ((ArrayList) action).isEmpty())) {
+                holder.body.setVisibility(View.VISIBLE);
+                holder.body.setText(message.getMessage());
                 holder.detailCardView.setVisibility(View.GONE);
             } else {
+                holder.body.setVisibility(View.GONE);
                 holder.detailCardView.setVisibility(View.VISIBLE);
                 addDetailCard(action, holder);
             }
         }
-        holder.body.setText(message.getMessage());
-
     }
 
     private void addDetailCard(final Object output, MessageItemViewHolder holder) {
@@ -90,7 +93,18 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageItemVie
                         holder.txtUrl.setText(news.getUrl());
                         if (i == 2)
                             holder.txtViewMore.setVisibility(View.VISIBLE);
+                        else
+                            holder.txtViewMore.setVisibility(View.GONE);
 
+
+                        holder.txtUrl.setVisibility(View.VISIBLE);
+                        holder.txtTitle.setVisibility(View.VISIBLE);
+                        holder.txtDesc.setVisibility(View.GONE);
+                        holder.txt4.setVisibility(View.GONE);
+                        holder.txt5.setVisibility(View.GONE);
+                        holder.imgNewsImage.setVisibility(View.VISIBLE);
+
+                        Picasso.with(context).load(news.getImageUrl()).into(holder.imgNewsImage);
                         holder.txtViewMore.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -110,6 +124,17 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageItemVie
                         holder.txtUrl.setText(webResult.getUrl());
                         if (i == 2)
                             holder.txtViewMore.setVisibility(View.VISIBLE);
+                        else
+                            holder.txtViewMore.setVisibility(View.GONE);
+
+
+                        holder.txtUrl.setVisibility(View.VISIBLE);
+                        holder.txtTitle.setVisibility(View.VISIBLE);
+                        holder.txtDesc.setVisibility(View.GONE);
+                        holder.txt4.setVisibility(View.GONE);
+                        holder.txt5.setVisibility(View.GONE);
+                        holder.imgNewsImage.setVisibility(View.GONE);
+
                         holder.txtViewMore.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -124,14 +149,31 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageItemVie
             }
         } else if (output instanceof Weather) {
             holder.txtTitle.setText("City :" + ((Weather) output).getCityName());
-            holder.txtDesc.setText("Humidity : " + ((Weather) output).getHumidity());
-            holder.txtUrl.setText("Pressure : " + ((Weather) output).getPressure());
-            holder.txt4.setText("Min. Temp. : " + ((Weather) output).getTempMain());
-            holder.txt5.setText("Max. Temp. : " + ((Weather) output).getTempMax());
+            holder.txtDesc.setText("Humidity : " + ((Weather) output).getHumidity() + "%");
+            holder.txtUrl.setText("Pressure : " + ((Weather) output).getPressure() + "hPa");
+            holder.txt4.setText("Min. Temp. : " + ((int)(((Weather) output).getTempMain() - 273)) + " C");
+            holder.txt5.setText("Max. Temp. : " + ((int)(((Weather) output).getTempMax() - 273)) + " C");
+
+            holder.txtUrl.setVisibility(View.VISIBLE);
+            holder.txtTitle.setVisibility(View.VISIBLE);
+            holder.txtDesc.setVisibility(View.VISIBLE);
+            holder.txt4.setVisibility(View.VISIBLE);
+            holder.txt5.setVisibility(View.VISIBLE);
+            holder.txtViewMore.setVisibility(View.GONE);
+            holder.imgNewsImage.setVisibility(View.GONE);
         } else if (output instanceof Quote) {
             holder.txtTitle.setText(((Quote) output).getTitle());
             holder.txtDesc.setText(((Quote) output).getContent().replace("<p>", "").replaceAll("</p>", ""));
             holder.txtUrl.setText(Html.fromHtml("<a href = " + ((Quote) output).getLink() + ">" + ((Quote) output).getLink() + "</a>"));
+
+            holder.txtUrl.setVisibility(View.VISIBLE);
+            holder.txtTitle.setVisibility(View.VISIBLE);
+            holder.txtDesc.setVisibility(View.VISIBLE);
+            holder.txt4.setVisibility(View.GONE);
+            holder.txt5.setVisibility(View.GONE);
+            holder.txtViewMore.setVisibility(View.GONE);
+            holder.imgNewsImage.setVisibility(View.GONE);
+
         } else if (output instanceof StringOP) {
 
         }

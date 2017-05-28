@@ -44,7 +44,7 @@ public class NewsAction implements Action {
         ArrayList<News> gNews = null, sportNews = null, cricNews = null, cnnNews = null;
         try {
             if (input.contains("news") || input.contains("feeds") || input.contains("breaking")) {
-                gNews = newsClient.getGoogleNews();
+                gNews = newsClient.getTOINews();
                 cnnNews = newsClient.getCNNNews();
             } else if (input.contains("cricket")) {
                 cricNews = newsClient.getCricNews();
