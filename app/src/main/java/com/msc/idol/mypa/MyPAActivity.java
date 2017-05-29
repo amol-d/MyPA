@@ -95,100 +95,6 @@ public class MyPAActivity extends AppCompatActivity
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setVisibility(View.GONE);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Runnable runnable = new Runnable() {
-                    public void run() {
-                        try {
-                            WebhoseIOClient webhoseClient = WebhoseIOClient.getInstance(WebUtils.WEBHOSE_API_KEY);
-                            ArrayList<WebResult> result = webhoseClient.query("filterWebData", "IndVSAus");
-
-                            System.out.println("Total results  = " + result.size());     // Print posts count
-
-
-                            for (WebResult o : result) {
-                                System.out.println(o.getTitle());  // Print title
-                                System.out.println(o.getAuthor()); // Print author
-                                System.out.println(o.getText());   // Print text
-                                System.out.println(o.getUrl());   // Print url
-                                System.out.println(o.getLanguage());   // Print language
-                            }
-
-                            WeatherClient weatherClient = new WeatherClient();
-                            Weather mainWeather = weatherClient.getWeatherForCity("Mumbai");
-                            System.out.println("City = " + mainWeather.getCityName());
-                            System.out.println("temp = kelvin " + mainWeather.getTempMain());
-                            System.out.println("temp min = kelvin " + mainWeather.getTempMin());
-                            System.out.println("temp max = kelvin " + mainWeather.getTempMax());
-                            System.out.println("pressure = hPa " + mainWeather.getPressure());
-                            System.out.println("humidity = % " + mainWeather.getHumidity());
-
-
-                            mainWeather = weatherClient.getWeatherForLatLon(MyPAApp.getLat(), MyPAApp.getLng());
-                            System.out.println("City = " + mainWeather.getCityName());
-                            System.out.println("temp = kelvin " + mainWeather.getTempMain());
-                            System.out.println("temp min = kelvin " + mainWeather.getTempMin());
-                            System.out.println("temp max = kelvin " + mainWeather.getTempMax());
-                            System.out.println("pressure = hPa " + mainWeather.getPressure());
-                            System.out.println("humidity = % " + mainWeather.getHumidity());
-
-                            NewsClient newsClient = new NewsClient();
-                            ArrayList<News> googleNews = newsClient.getGoogleNews();
-                            ArrayList<News> toiNews = newsClient.getTOINews();
-                            ArrayList<News> cnnNews = newsClient.getCNNNews();
-                            ArrayList<News> cricNews = newsClient.getCricNews();
-                            ArrayList<News> sportsNews = newsClient.getSportNews();
-
-                            for (News element : googleNews) {
-                                System.out.println(element.getTitle());
-                                System.out.println(element.getDesc());
-                                System.out.println(element.getUrl());
-                                System.out.println(element.getImageUrl());
-                            }
-
-                            for (News element : toiNews) {
-                                System.out.println(element.getTitle());
-                                System.out.println(element.getDesc());
-                                System.out.println(element.getUrl());
-                                System.out.println(element.getImageUrl());
-                            }
-
-                            for (News element : cnnNews) {
-                                System.out.println(element.getTitle());
-                                System.out.println(element.getDesc());
-                                System.out.println(element.getUrl());
-                                System.out.println(element.getImageUrl());
-                            }
-
-                            for (News element : cricNews) {
-                                System.out.println(element.getTitle());
-                                System.out.println(element.getDesc());
-                                System.out.println(element.getUrl());
-                                System.out.println(element.getImageUrl());
-                            }
-
-                            for (News element : sportsNews) {
-                                System.out.println(element.getTitle());
-                                System.out.println(element.getDesc());
-                                System.out.println(element.getUrl());
-                                System.out.println(element.getImageUrl());
-                            }
-
-                            QuoteClient quoteClient = new QuoteClient();
-                            quoteClient.getQuote();
-                        } catch (URISyntaxException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                };
-                new Thread(runnable).start();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -243,30 +149,8 @@ public class MyPAActivity extends AppCompatActivity
                         String input = etMessage.getText().toString();
                         chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(input, null, true));
                         //TODO add to conversation
-                        Object output = actionManager.execute(MyPAActivity.this, etMessage.getText().toString(), MyPAActivity.this);
-                        System.out.println(output);
-                        String outputMessage = "Here's what I got for you";
-                        if (output instanceof String)
-                            voice.speech((String) output);
-                        else
-                            voice.speech(outputMessage);
-
-                        if (output instanceof String) {
-                            chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message((String) output, null, false));
-                        } else if (output instanceof ArrayList) {
-                            if (!((ArrayList) output).isEmpty()) {
-                                Object o = ((ArrayList) output).get(0);
-                                if (o instanceof News) {
-                                    chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
-                                } else if (o instanceof WebResult) {
-                                    chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
-                                }
-                            }
-                        } else if (output instanceof Weather) {
-                            chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
-                        } else if (output instanceof Quote) {
-                            chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
-                        }
+                        actionManager.execute(MyPAActivity.this, etMessage.getText().toString(), MyPAActivity.this);
+                        etMessage.setText("");
                     }
                 } else {
                     Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -316,10 +200,6 @@ public class MyPAActivity extends AppCompatActivity
             return webResults;
         }
         return "Waiting for message";
-    }
-
-    private void sendMessage(String trim) {
-        //TODO send message
     }
 
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -488,33 +368,12 @@ public class MyPAActivity extends AppCompatActivity
                 if (resultCode == RESULT_OK && data != null) {
                     ArrayList<String> text = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     String input = text.get(0);
-
-
-                    //TODO handle output
-                    Object output = actionManager.execute(MyPAActivity.this, input, MyPAActivity.this);
                     chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(input, null, true));
-//                    Object output = actionManager.execute(input);
-                    System.out.println(output.toString());
-                    String outputMessage = "Here's what I got for you";
-                    if (output instanceof String)
-                        voice.speech((String) output);
-                    else
-                        voice.speech(outputMessage);
-                    if (output instanceof String) {
-                        chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message((String) output, null, false));
-                    } else if (output instanceof ArrayList) {
-                        if (!((ArrayList) output).isEmpty()) {
-                            Object o = ((ArrayList) output).get(0);
-                            if (o instanceof News) {
-                                chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
-                            } else if (o instanceof WebResult) {
-                                chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
-                            }
-                        }
-                    } else if (output instanceof Weather) {
-                        chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
-                    } else if (output instanceof Quote) {
-                        chatRecyclerAdapter.addMessage(new com.msc.idol.mypa.model.message.Message(outputMessage, output, false));
+                    //TODO handle output
+                    if (!TextUtils.isEmpty(input)) {
+                        actionManager.execute(MyPAActivity.this, input, MyPAActivity.this);
+                    } else {
+                        voice.speech("Couldn't catch what you just said");
                     }
                 }
                 break;

@@ -19,13 +19,13 @@ public class ActionManager {
     private ArrayList<Action> actionList = new ArrayList<>();
 
     public ActionManager() {
-        actionList.add(new TimeAction());
-        actionList.add(new GreetingAction());
-        actionList.add(new WebAction());
         actionList.add(new GeneralQuestionAction());
+        actionList.add(new GreetingAction());
+        actionList.add(new TimeAction());
         actionList.add(new NewsAction());
         actionList.add(new QuoteAction());
         actionList.add(new WeatherAction());
+        actionList.add(new WebAction());
     }
 
     public Object execute(Activity context, String input, AssistantResponseReceiver receiver) {
