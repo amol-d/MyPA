@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,6 +31,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.msc.idol.mypa.chat.actions.ActionManager;
@@ -44,21 +46,15 @@ import com.msc.idol.mypa.model.quote.Quote;
 import com.msc.idol.mypa.model.string.StringOP;
 import com.msc.idol.mypa.model.weather.Weather;
 import com.msc.idol.mypa.model.web.WebResult;
-import com.msc.idol.mypa.model.web.WebUtils;
-import com.msc.idol.mypa.network.NewsClient;
-import com.msc.idol.mypa.network.QuoteClient;
-import com.msc.idol.mypa.network.WeatherClient;
-import com.msc.idol.mypa.network.WebhoseIOClient;
+import com.msc.idol.mypa.network.ConnectivityReceiver;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
 
 public class MyPAActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, SoftKeyboardRelativeLayout.SoftKeyboardListener, AssistantResponseReceiver {
+        implements ConnectivityReceiver.ConnectivityReceiverListener, NavigationView.OnNavigationItemSelectedListener, SoftKeyboardRelativeLayout.SoftKeyboardListener, AssistantResponseReceiver {
 
     private static final String TAG = MyPAActivity.class.getSimpleName();
     private ResponseReceiver receiver;
@@ -109,7 +105,7 @@ public class MyPAActivity extends AppCompatActivity
         btSend = (ImageButton) findViewById(R.id.sendMessageButton);
         rvChat = (RecyclerView) findViewById(R.id.rvChat);
 
-        btSend.setBackgroundResource(R.drawable.ic_mic_white_18dp);
+        btSend.setBackgroundResource(R.drawable.ic_voice_msg);
         voiceCommand = true;
 
         // Setting the LayoutManager.
@@ -144,6 +140,7 @@ public class MyPAActivity extends AppCompatActivity
 
             @Override
             public void onClick(View v) {
+                checkConnection();
                 if (!voiceCommand) {
                     if (!TextUtils.isEmpty(etMessage.getText().toString())) {
                         String input = etMessage.getText().toString();
@@ -268,7 +265,7 @@ public class MyPAActivity extends AppCompatActivity
     @Override
     public void onSoftKeyboardHide() {
         Log.i(TAG, "onSoftKeyboardHide: ");
-        btSend.setBackgroundResource(R.drawable.ic_mic_white_18dp);
+        btSend.setBackgroundResource(R.drawable.ic_voice_msg);
         voiceCommand = true;
     }
 
@@ -319,27 +316,6 @@ public class MyPAActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.my_pa, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -348,11 +324,7 @@ public class MyPAActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.profile) {
-            startActivity(new Intent(getBaseContext(), DetailsActivity.class));
-        } else if (id == R.id.settings) {
-
-        } else if (id == R.id.share) {
-
+            startActivity(new Intent(getBaseContext(), ProfileActivity.class));
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -380,6 +352,36 @@ public class MyPAActivity extends AppCompatActivity
             }
         }
     }
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+        showSnack(isConnected);
+    }
 
+    // Method to manually check connection status
+    private void checkConnection() {
+        boolean isConnected = ConnectivityReceiver.isConnected();
+        if (!isConnected)
+            showSnack(isConnected);
+    }
+
+    private void showSnack(boolean isConnected) {
+        String message;
+        int color;
+        if (isConnected) {
+            message = "Good! Connected to Internet";
+            color = Color.WHITE;
+        } else {
+            message = "Sorry! Not connected to internet";
+            color = Color.RED;
+        }
+
+        Snackbar snackbar = Snackbar
+                .make(etMessage, message, Snackbar.LENGTH_LONG);
+
+        View sbView = snackbar.getView();
+        TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
+        textView.setTextColor(color);
+        snackbar.show();
+    }
 
 }

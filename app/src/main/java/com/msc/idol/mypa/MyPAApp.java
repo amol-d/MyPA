@@ -7,6 +7,7 @@ import android.os.StrictMode;
 import com.facebook.stetho.Stetho;
 import com.msc.idol.mypa.model.news.News;
 import com.msc.idol.mypa.model.web.WebResult;
+import com.msc.idol.mypa.network.ConnectivityReceiver;
 import com.uphyca.stetho_realm.RealmInspectorModulesProvider;
 
 import java.util.ArrayList;
@@ -80,5 +81,9 @@ public class MyPAApp extends Application {
 
     public void setWebResults(ArrayList<WebResult> webResults) {
         this.webResults = webResults;
+    }
+
+    public void setConnectivityListener(ConnectivityReceiver.ConnectivityReceiverListener listener) {
+        ConnectivityReceiver.connectivityReceiverListener = listener;
     }
 }

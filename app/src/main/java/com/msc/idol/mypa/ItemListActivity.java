@@ -2,6 +2,7 @@ package com.msc.idol.mypa;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -14,12 +15,13 @@ import android.widget.TextView;
 
 import com.msc.idol.mypa.model.news.News;
 import com.msc.idol.mypa.model.web.WebResult;
+import com.msc.idol.mypa.network.ConnectivityReceiver;
 import com.squareup.picasso.Picasso;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class ItemListActivity extends AppCompatActivity {
+public class ItemListActivity extends AppCompatActivity implements ConnectivityReceiver.ConnectivityReceiverListener{
 
     public static final String INTENT_NEWS_ITEMS = "key_news_items";
     public static final String INTENT_WEB_ITEMS = "key_web_items";
@@ -40,6 +42,7 @@ public class ItemListActivity extends AppCompatActivity {
         } else if (webResults != null) {
             addWebItems(webResults);
         }
+        checkConnection();
     }
 
     private void addWebItems(ArrayList<WebResult> webResults) {
@@ -90,5 +93,35 @@ public class ItemListActivity extends AppCompatActivity {
             rootLayout.addView(view);
             rootLayout.addView(view1);
         }
+    }
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+        showSnack(isConnected);
+    }
+
+    // Method to manually check connection status
+    private void checkConnection() {
+        boolean isConnected = ConnectivityReceiver.isConnected();
+        showSnack(isConnected);
+    }
+    private void showSnack(boolean isConnected) {
+        String message;
+        int color;
+        if (isConnected) {
+            message = "Good! Connected to Internet";
+            color = Color.WHITE;
+        } else {
+            message = "Sorry! Not connected to internet";
+            color = Color.RED;
+        }
+
+        Snackbar snackbar = Snackbar
+                .make(rootLayout, message, Snackbar.LENGTH_LONG);
+
+        View sbView = snackbar.getView();
+        TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
+        textView.setTextColor(color);
+        snackbar.show();
     }
 }
