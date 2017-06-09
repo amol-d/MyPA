@@ -18,6 +18,11 @@ import io.realm.Realm;
  * Created by adesai on 3/15/2017.
  */
 public class MyPAApp extends Application {
+    public static final String PREF_USER = "user_pref";
+    public static final String PREF_KEY_NAME = "user_name";
+    public static final String PREF_KEY_CITY = "user_city";
+    public static final String PREF_KEY_MOBILE = "user_mobile";
+    public static final String PREF_KEY_IS_FIRST_LAUNCH = "is_first_launch";
     public static float lat, lng;
 
     private static MyPAApp mInstance;
