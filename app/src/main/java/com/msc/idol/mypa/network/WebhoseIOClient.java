@@ -18,6 +18,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
@@ -59,10 +60,11 @@ public class WebhoseIOClient {
      */
     public JsonElement getResponse(String rawUrl) throws IOException, URISyntaxException {
 
-        URL url = new URL(rawUrl);
+        /*URL url = new URL(rawUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setDoOutput(true);
+//        connection.setRequestMethod("GET");
+//        connection.setDoOutput(true);
+//        connection.setDoInput(true);
 
         // Get Response
         int respCode = connection.getResponseCode();
@@ -78,10 +80,21 @@ public class WebhoseIOClient {
         while ((line = rd.readLine()) != null) {
             response.append(line);
         }
-        rd.close();
+        rd.close();*/
 
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(rawUrl)
+                .get()
+                .addHeader("cache-control", "no-cache")
+//                .addHeader("postman-token", "fffd091c-6a21-b571-e651-5ed13357ef3d")
+                .build();
+
+        Response response = client.newCall(request).execute();
+        String s = response.body().string();
         JsonParser parser = new JsonParser();
-        JsonElement o = parser.parse(response.toString());
+        JsonElement o = parser.parse(s);
 
         // Set next query URL
         mNext = WEBHOSE_BASE_URL + o.getAsJsonObject().get("next");

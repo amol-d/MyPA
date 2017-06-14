@@ -170,6 +170,7 @@ public class MyPAActivity extends AppCompatActivity
             getLocation();
         }
 
+//        throw new RuntimeException("");
     }
 
     private Object getActionForMessage(long id) {

@@ -148,7 +148,12 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageItemVie
                 }
             }
         } else if (output instanceof Weather) {
-            holder.txtTitle.setText("City :" + ((Weather) output).getCityName());
+
+            try {
+                holder.txtTitle.setText("City :" + ("Earth".toLowerCase().equalsIgnoreCase(((Weather) output).getCityName()) ? "Unknown" : ((Weather) output).getCityName()));
+            } catch (Exception e) {
+                holder.txtTitle.setText("City : Unknown");
+            }
             holder.txtDesc.setText("Humidity : " + ((Weather) output).getHumidity() + "%");
             holder.txtUrl.setText("Pressure : " + ((Weather) output).getPressure() + "hPa");
             holder.txt4.setText("Min. Temp. : " + ((int)(((Weather) output).getTempMain() - 273)) + " C");

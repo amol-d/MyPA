@@ -2,6 +2,7 @@ package com.msc.idol.mypa;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.os.StrictMode;
 
 import com.facebook.stetho.Stetho;
@@ -42,7 +43,18 @@ public class MyPAApp extends Application {
                         .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
                         .enableWebKitInspector(RealmInspectorModulesProvider.builder(this).build())
                         .build());
+//        Thread.setDefaultUncaughtExceptionHandler(_unCaughtExceptionHandler);
+
     }
+
+    private Thread.UncaughtExceptionHandler _unCaughtExceptionHandler =
+            new Thread.UncaughtExceptionHandler() {
+                @Override
+                public void uncaughtException(Thread thread, Throwable ex) {
+                    getBaseContext().startActivity(new Intent(getBaseContext(), MyPAActivity.class));
+                    System.exit(0);
+                }
+            };
 
     public static MyPAApp getInstance() {
         return mInstance;

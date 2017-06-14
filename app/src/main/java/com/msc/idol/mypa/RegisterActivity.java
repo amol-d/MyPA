@@ -186,7 +186,6 @@ public class RegisterActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(final Boolean success) {
 
-            showProgress(false);
             SharedPreferences preferences = getSharedPreferences(MyPAApp.PREF_USER, MODE_PRIVATE);
             SharedPreferences.Editor editor = preferences.edit();
             editor.putString(MyPAApp.PREF_KEY_NAME, name);
@@ -194,6 +193,8 @@ public class RegisterActivity extends AppCompatActivity {
             editor.putString(MyPAApp.PREF_KEY_MOBILE, mobile);
             editor.putBoolean(MyPAApp.PREF_KEY_IS_FIRST_LAUNCH, false);
             editor.commit();
+
+            showProgress(false);
 
             startActivity(new Intent(getBaseContext(), MyPAActivity.class));
             finish();
